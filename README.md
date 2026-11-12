@@ -70,6 +70,8 @@ See, edit and delete everything on your RAMen page: [getramenai.com](https://get
 | `RAMEN_APP` | The app name on your notes' receipts. By default, the name your app gives itself |
 | `RAMEN_DEBUG` | Set to `1` for more messages (on stderr) |
 
+Without a key, the connector still starts and lists RAMen's tools; using one tells you to add your key.
+
 The sign-in is saved in `~/.config/ramen-mcp` (on Windows, `%APPDATA%\ramen-mcp`), readable only by you, so the key
 is sent to RAMen once per app and not on every start.
 

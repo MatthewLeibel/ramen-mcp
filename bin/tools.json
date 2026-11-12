@@ -1,0 +1,288 @@
+{
+ "serverInfo": {
+  "name": "ramen-memory",
+  "title": "RAMen",
+  "version": "1.6.0",
+  "websiteUrl": "https://getramenai.com"
+ },
+ "instructions": "RAMen Memory is the user's own memory, shared by their AI apps. Call recall when a conversation starts on something that depends on the user (their people, work, projects, rules, preferences) or on earlier conversations, and when they mention something that is not in this chat; what this chat already says needs no lookup. Call remember when they tell you a lasting fact about themselves or ask you to remember something; the details of the work at hand stay in the chat, and save_thread keeps them. When two notes disagree, the later one holds now. When recall finds no note, try other words or ask; don't guess, and don't tell the user they never said it. When the user wants to go on with a long chat in a fresh one or in another app, call save_thread; in the new chat, resume_thread brings it back and recall_thread finds the details.",
+ "tools": [
+  {
+   "name": "recall",
+   "title": "Recall from RAMen Memory",
+   "description": "Look up what the user told you or their other AI apps in earlier chats: their family, work, projects, rules, preferences and plans, kept in their RAMen Memory. Use it when a conversation starts on something that depends on who the user is, and when they refer to something that is not in this chat. It always gives the user's must-know facts too; for how to answer (style, length, tone), their profile card first.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "question": {
+      "type": "string",
+      "description": "what you need to know, in the user's words, for example 'What is my wholesale pricing rule?'"
+     }
+    },
+    "required": [
+     "question"
+    ]
+   },
+   "annotations": {
+    "title": "Recall from RAMen Memory",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "remember",
+   "title": "Save to RAMen Memory",
+   "description": "Save a lasting fact about the user (their people, home, health, work, tastes, life plans) or what they ask you to remember, so their other AI apps know it next time. One clear sentence in their words. Not the details of the work in this chat: a saved chat keeps those.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "note": {
+      "type": "string",
+      "description": "the fact in the user's words, for example 'My dentist is Dr. Lindqvist.'"
+     },
+     "quote": {
+      "type": "string",
+      "description": "the user's exact words in this chat that the note comes from"
+     },
+     "inferred": {
+      "type": "boolean",
+      "description": "true if the user did not say it and you are guessing: it waits for their OK"
+     },
+     "profile": {
+      "type": "boolean",
+      "description": "true for how the user wants answers (length, tone, format, what to call them): goes on their profile card, which every app gets"
+     },
+     "must": {
+      "type": "boolean",
+      "description": "true only when the user asks that every AI always keep this in mind (an allergy, a medicine, a diet, a disability, where they live, a hard limit)"
+     }
+    },
+    "required": [
+     "note"
+    ]
+   },
+   "annotations": {
+    "title": "Save to RAMen Memory",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "save_thread",
+   "title": "Save this chat to RAMen",
+   "description": "Save where this conversation stands, so it can go on in a fresh chat or in another AI app (Claude, ChatGPT or any app with RAMen Memory) without re-reading this whole chat: every reply in a long chat re-reads all of it, which uses up tokens and usage limits. Use it when the user asks to save the chat or to continue it in a new chat or elsewhere, or when the chat has grown long. Be complete and specific: every name, number, date, time, price and reason, every change (with what it was before), and the latest version of anything you wrote together, word for word. Saving again under the same name adds to the thread and updates its values.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "thread": {
+      "type": "string",
+      "description": "a short name for this work, for example 'wedding planning'"
+     },
+     "goal": {
+      "type": "string",
+      "description": "what this work is for, in one sentence"
+     },
+     "now": {
+      "type": "array",
+      "description": "values that can change (dates, counts, budgets, choices, status): the current value, and the one before if it changed",
+      "items": {
+       "type": "object",
+       "properties": {
+        "item": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string"
+        },
+        "was": {
+         "type": "string"
+        }
+       },
+       "required": [
+        "item",
+        "value"
+       ]
+      }
+     },
+     "facts": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "everything else that holds: names, places, times, prices, numbers, people's roles, constraints, preferences; one specific, self-contained sentence each"
+     },
+     "decisions": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "each decision, why, and what was turned down"
+     },
+     "open": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "the open questions, to-dos and deadlines now (this list replaces the saved one)"
+     },
+     "drafts": {
+      "type": "array",
+      "description": "every piece written together (emails, messages, lists, plans, wording), each in its latest version, word for word; do not leave drafts out to save space: they are what a new chat cannot rebuild",
+      "items": {
+       "type": "object",
+       "properties": {
+        "title": {
+         "type": "string"
+        },
+        "text": {
+         "type": "string"
+        }
+       },
+       "required": [
+        "title",
+        "text"
+       ]
+      }
+     },
+     "project": {
+      "type": "string",
+      "description": "the project the user puts this work in, if they name one, for example 'wedding'"
+     },
+     "done": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "open items finished since the last save (their words)"
+     },
+     "checkpoint": {
+      "type": "boolean",
+      "description": "true for a save you make on your own about every 15 messages in a long chat (the user's \"Save long chats as they go\" setting decides; RAMen answers 'Not saved' when it is off)"
+     }
+    },
+    "required": [
+     "thread",
+     "goal",
+     "now",
+     "facts",
+     "decisions",
+     "open",
+     "drafts"
+    ]
+   },
+   "annotations": {
+    "title": "Save this chat to RAMen",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "resume_thread",
+   "title": "Continue a RAMen thread",
+   "description": "Bring back a saved RAMen chat, to go on from it here. Use it when the user wants to continue earlier work, a saved chat, a project or a RAMen thread. Without a name it brings the most recent one and lists the others.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "thread": {
+      "type": "string",
+      "description": "the thread's name, or words from it; leave out for the most recent"
+     },
+     "project": {
+      "type": "string",
+      "description": "a project's name: brings back all of its threads together"
+     },
+     "open": {
+      "type": "boolean",
+      "description": "true to list the open items of every thread instead"
+     }
+    }
+   },
+   "annotations": {
+    "title": "Continue a RAMen thread",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "recall_thread",
+   "title": "Look up in a RAMen thread",
+   "description": "Look up details of saved RAMen threads: the full text of a draft (ask by its title), or anything else that was saved. Without a thread it searches every thread and the user's memory notes, and says where each match is from.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "question": {
+      "type": "string",
+      "description": "what you need, for example 'What time do the shuttles leave?' or 'the invitation draft'"
+     },
+     "thread": {
+      "type": "string",
+      "description": "the thread's name; leave out to search all of them"
+     }
+    },
+    "required": [
+     "question"
+    ]
+   },
+   "annotations": {
+    "title": "Look up in a RAMen thread",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "forget",
+   "title": "Forget from RAMen Memory",
+   "description": "Delete what RAMen Memory keeps about something, when the user asks you to forget it: every note that contains the given words. To delete a saved thread, give 'thread: ' and its name.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "about": {
+      "type": "string",
+      "description": "words the notes to delete contain, for example 'Lindqvist', or 'thread: wedding planning'"
+     }
+    },
+    "required": [
+     "about"
+    ]
+   },
+   "annotations": {
+    "title": "Forget from RAMen Memory",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "memory_status",
+   "title": "RAMen Memory status",
+   "description": "The user's profile card (how they want answers), then how much RAMen Memory keeps, AI guesses waiting for the user's OK, open items, the saved threads and which computers are linked. With settings it changes RAMen settings.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "settings": {
+      "type": "object",
+      "description": "only what the user asked to change: checkpoints (true or false), topics ({\"health\": false})"
+     }
+    }
+   },
+   "annotations": {
+    "title": "RAMen Memory status",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  }
+ ]
+}

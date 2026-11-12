@@ -43,7 +43,7 @@ const msgs = [init, { jsonrpc: "2.0", method: "notifications/initialized" },
   { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "memory_status", arguments: {} } },
   { jsonrpc: "2.0", id: 4, method: "tools/call", params: { name: "recall", arguments: { question: "What do you know about me?" } } }];
 
-if (!process.env.RAMEN_LICENSE_KEY) { console.log("Set RAMEN_LICENSE_KEY first."); process.exit(2); }
+if (!process.env.RAMEN_LICENSE_KEY) { console.log("Set RAMEN_LICENSE_KEY first (a RAMen license key)."); process.exit(2); }
 const dir = mkdtempSync(join(tmpdir(), "ramen-mcp-test-"));
 try {
   const a = await run({ XDG_CONFIG_HOME: dir, RAMEN_DEBUG: "1" }, msgs, { waitFor: [1, 2, 3, 4] });
@@ -67,6 +67,12 @@ try {
   const e = c.got.get(1);
   check(e && e.error && /sign-in failed|license|key/i.test(e.error.message), "a wrong key gets a clear error, not a hang",
     JSON.stringify(e));
+  const n = await run({ XDG_CONFIG_HOME: dir, RAMEN_LICENSE_KEY: "" }, [msgs[0], msgs[2], msgs[3]], { waitFor: [1, 2, 3] });
+  const nt = ((n.got.get(2) && n.got.get(2).result && n.got.get(2).result.tools) || []).map((t) => t.name);
+  check(n.got.get(1) && n.got.get(1).result && TOOLS.every((t) => nt.includes(t)), "without a key: starts and lists the 7 tools");
+  const nc = n.got.get(3);
+  check(nc && nc.result && nc.result.isError && /RAMEN_LICENSE_KEY/.test(JSON.stringify(nc.result)),
+    "without a key: a tool call asks for the key", JSON.stringify(nc));
 } finally {
   rmSync(dir, { recursive: true, force: true });
 }

@@ -8,7 +8,7 @@ import { homedir, platform } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 const BASE = (process.env.RAMEN_SERVER || "https://ramen-online.matthewsleibel.workers.dev").replace(/\/+$/, "");
 const MCP_URL = `${BASE}/mcp`;
 const REDIRECT = "http://localhost/ramen-mcp/callback";
@@ -214,8 +214,31 @@ async function restart() {
   await post({ jsonrpc: "2.0", method: "notifications/initialized" }, { forward: false, retry: false });
 }
 
+/** Without a key: RAMen's tools are listed (from bin/tools.json, a copy of RAMen's own list) and each one asks for
+ * the key, so apps and directories can see what the connector does before it is set up. */
+const SNAPSHOT = JSON.parse(readFileSync(new URL("./tools.json", import.meta.url), "utf8"));
+const NEED_KEY = "RAMen needs your license key: set RAMEN_LICENSE_KEY in this app's MCP settings, then restart the app. " +
+  "Get a free key at https://getramenai.com.";
+function answerWithoutKey(msg) {
+  if (msg.id === undefined || !msg.method) return;                       // notifications and replies need nothing
+  const reply = (result) => out({ jsonrpc: "2.0", id: msg.id, result });
+  if (msg.method === "initialize") {
+    const asked = msg.params && msg.params.protocolVersion;
+    return reply({ protocolVersion: ["2025-06-18", "2025-03-26", "2024-11-05"].includes(asked) ? asked : "2025-06-18",
+      capabilities: { tools: { listChanged: false } }, serverInfo: { ...SNAPSHOT.serverInfo, version: VERSION },
+      instructions: `${SNAPSHOT.instructions} ${NEED_KEY}` });
+  }
+  if (msg.method === "tools/list") return reply({ tools: SNAPSHOT.tools });
+  if (msg.method === "tools/call") return reply({ content: [{ type: "text", text: NEED_KEY }], isError: true });
+  if (msg.method === "ping") return reply({});
+  if (msg.method === "resources/list") return reply({ resources: [] });
+  if (msg.method === "prompts/list") return reply({ prompts: [] });
+  out({ jsonrpc: "2.0", id: msg.id, error: { code: -32601, message: `${msg.method} needs RAMen: ${NEED_KEY}` } });
+}
+
 const pending = new Set();
 async function handle(msg) {
+  if (!KEY) return answerWithoutKey(msg);
   try {
     if (msg.method === "initialize") {
       initMsg = JSON.parse(JSON.stringify(msg));
