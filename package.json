@@ -3,14 +3,39 @@
   "version": "1.0.1",
   "description": "RAMen's memory in any app that runs MCP servers on your computer: Claude Desktop, Cursor, VS Code, Windsurf, Zed, Cline, Codex and more.",
   "type": "module",
-  "bin": { "ramen-mcp": "bin/ramen-mcp.js" },
-  "files": ["bin/", "README.md", "LICENSE"],
-  "engines": { "node": ">=18.18" },
-  "scripts": { "test": "node test/smoke.mjs" },
-  "keywords": ["mcp", "model-context-protocol", "memory", "ai-memory", "claude", "chatgpt", "cursor", "ramen"],
+  "bin": {
+    "ramen-mcp": "bin/ramen-mcp.js"
+  },
+  "files": [
+    "bin/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.18"
+  },
+  "scripts": {
+    "test": "node test/smoke.mjs",
+    "test:offline": "node test/nokey.mjs"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "memory",
+    "ai-memory",
+    "claude",
+    "chatgpt",
+    "cursor",
+    "ramen"
+  ],
   "homepage": "https://getramenai.com",
-  "repository": { "type": "git", "url": "git+https://github.com/MatthewLeibel/ramen-mcp.git" },
-  "bugs": { "email": "support@getramenai.com" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MatthewLeibel/ramen-mcp.git"
+  },
+  "bugs": {
+    "email": "support@getramenai.com"
+  },
   "author": "NEOTECH Inc. <support@getramenai.com> (https://getramenai.com)",
   "license": "MIT"
 }

@@ -83,7 +83,7 @@ Support: support@getramenai.com.
 
 ## Test
 
-`RAMEN_LICENSE_KEY=your-key npm test` starts the connector, lists the tools and runs two read-only tools against RAMen.
+`npm run test:offline` checks the connector without a key or network (it starts, lists the 7 tools and asks for the key on use); CI runs it on Node 18 to 24. `RAMEN_LICENSE_KEY=your-key npm test` starts the connector, lists the tools and runs two read-only tools against RAMen.
 
 ## License
 
